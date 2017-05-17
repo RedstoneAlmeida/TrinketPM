@@ -51,11 +51,8 @@ class Trinket extends PluginBase{
       return;
     }
 
-    if($data["chat-link"])
-    {
-      $this->getServer()->getScheduler()->scheduleRepeatingTask(new BroadcastTask($this), 25);
-      $this->getServer()->getPluginManager()->registerEvents(new EventListener($this), $this);
-    }
+    $this->getServer()->getScheduler()->scheduleRepeatingTask(new BroadcastTask($this), 25);
+    $this->getServer()->getPluginManager()->registerEvents(new EventListener($this), $this);
   }
 
   public function onDisable()

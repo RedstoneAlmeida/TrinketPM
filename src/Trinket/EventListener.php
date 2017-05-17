@@ -4,6 +4,9 @@ namespace Trinket;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerChatEvent;
 
+use Trinket\Network\Packet;
+use Trinket\Network\Info;
+
 /* Copyright (C) ImagicalGamer - All Rights Reserved
  * Unauthorized copying of this file, via any medium is strictly prohibited
  * Proprietary and confidential
@@ -26,6 +29,9 @@ class EventListener implements Listener{
       return;
     }
     $format = $ev->getMessage(); //NEEDS TO BE UPDATED TO SUPPORT PURECHAT ETC.
-    $this->plugin->getServerThread()->getMessageQueue()->addItem($format);
+    $pk = new Packet();
+    $pk->identifier = Info::TYPE_PACKET_DATA_SEND;
+    $pk->chat = $format;
+    $this->plugin->getServerThread()->getPacketQueue()->addItem($pk);
   }
 }

@@ -86,15 +86,11 @@ class ServerThread extends Thread{
 				$pk = new Packet();
 				@socket_write($this->socket, $pk->encode());
 			}
-			if(!empty($this->packetQueue->getQueue()))
+
+			$pk = $this->getPacketQueue()->getNext();
+			if($pk instanceof Packet)
 			{
-				$pk = $this->packetQueue->getNext();
-				var_dump($pk);
-				if($pk instanceof Packet)
-				{
-					@socket_write($this->socket, $pk->encode());
-				}
-				unset($pk);
+				@socket_write($this->socket, $pk->encode());
 			}
 
 			$input = @socket_read($this->socket, 1024);
@@ -104,7 +100,6 @@ class ServerThread extends Thread{
 			}
 
 			$pk = new DecodedPacket($input);
-			var_dump($pk);
 
 			switch($pk->getId())
 			{
@@ -112,7 +107,6 @@ class ServerThread extends Thread{
 				case Info::TYPE_PACKET_DUMMY:
 					continue;
 				break;
-
 				case Info::TYPE_PACKET_LOGIN:
 					if($this->connected)
 					{
@@ -141,11 +135,6 @@ class ServerThread extends Thread{
 					}
 				break;
 				case Info::TYPE_PACKET_DISCONNECT:
-					if(!$this->connected)
-					{
-						continue;
-					}
-
 					$this->connected = False;
 					$this->getLogger()->warning("Disconnected from host server.");
 					continue;
@@ -181,6 +170,7 @@ class ServerThread extends Thread{
 	public function kill()
 	{
 		$this->isPluginEnabled = False;
+		$this->__destruct();
 	}
 
 	public function getLogger()

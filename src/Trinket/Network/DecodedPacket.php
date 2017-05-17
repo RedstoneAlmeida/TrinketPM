@@ -15,7 +15,7 @@ class DecodedPacket{
   {
     if(!is_array($data))
     {
-      $data = json_decode($data, True);
+      $data = json_decode(trim($data), True);
     }
     $this->identifier = isset($data["id"]) ? $data["id"] : 1;
     $this->array = $data;

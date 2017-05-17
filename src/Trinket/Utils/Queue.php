@@ -27,6 +27,6 @@ class Queue{
 
 	public function addItem($item)
 	{
-		$this->queue[] = $item;
+		array_push($this->queue, $item);
 	}
 }
