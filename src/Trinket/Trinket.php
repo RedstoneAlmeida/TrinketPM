@@ -5,7 +5,15 @@ use pocketmine\plugin\PluginBase;
 
 use pocketmine\utils\Config;
 
-use Trinket\Tasks\BroadcastTask;
+use Trinket\Network\Client\TCPClientSocket;
+
+use Trinket\Utils\TrinketLogger;
+use Trinket\Utils\Queue;
+
+use Trinket\Commands\PacketCommand;
+
+use Trinket\Tasks\PacketSendTask;
+use Trinket\Tasks\PacketReadTask;
 
 /* Copyright (C) ImagicalGamer - All Rights Reserved
  * Unauthorized copying of this file, via any medium is strictly prohibited
@@ -15,8 +23,7 @@ use Trinket\Tasks\BroadcastTask;
 
 class Trinket extends PluginBase{
 
-  protected $serverThread;
-  protected $data;
+  private $socket, $tlogger, $queue;
 
   public function onEnable()
   {
@@ -30,12 +37,6 @@ class Trinket extends PluginBase{
       @unlink($this->getDataFolder() . "/config.yml");
       (new Config($this->getDataFolder() . "/config.yml", Config::YAML, $data))->save();
     }
-    if(!isset($data["ip"]) or $data["ip"] === "")
-    {
-      $data["ip"] = getHostByName(getHostName());
-      @unlink($this->getDataFolder() . "/config.yml");
-      (new Config($this->getDataFolder() . "/config.yml", Config::YAML, $data))->save();
-    }
 
     if(!isset($data["password"]) or $data["password"] === "")
     {
@@ -43,25 +44,27 @@ class Trinket extends PluginBase{
       return;
     }
 
-    $this->serverThread = new ServerThread($data);
-    if($this->serverThread->hasErrors())
-    {
-      $this->getLogger()->error("Unknown error occured within ServerThread");
-      $this->getServer()->getPluginManager()->disablePlugin($this);
-      return;
-    }
+    $this->queue = new Queue();
+    $this->socket = new TCPClientSocket(($this->tlogger = new TrinketLogger()), $data["password"]);
+    $this->getServer()->getCommandMap()->register("packet", new PacketCommand($this));
 
-    $this->getServer()->getScheduler()->scheduleRepeatingTask(new BroadcastTask($this), 25);
-    $this->getServer()->getPluginManager()->registerEvents(new EventListener($this), $this);
+    $this->getServer()->getScheduler()->scheduleRepeatingTask(new PacketSendTask($this, $this->tlogger, $this->socket), 25);//send packets from queue every 1.25 sec
+    $readTask = new PacketReadTask($this->tlogger, $this->socket);
   }
 
-  public function onDisable()
+  public function getSendQueue() : Queue
   {
-    $this->getServerThread()->kill();
+    return ($this->queue instanceof Queue) ? $this->queue : $this->setSendQueue(new Queue());
   }
 
-  public function getServerThread()
+  public function setSendQueue(Queue $queue)
   {
-    return $this->serverThread;
+    $this->queue = $queue;
+    return $queue;
+  }
+
+  public function getTCPSocket() : TCPClientSocket
+  {
+    return $this->socket;
   }
 }

@@ -1,5 +1,5 @@
 <?php
-namespace Trinket\Network;
+namespace Trinket\Network\Protocol;
 
 /* Copyright (C) ImagicalGamer - All Rights Reserved
  * Unauthorized copying of this file, via any medium is strictly prohibited

@@ -17,7 +17,9 @@ class Queue{
 
 	public function getNext()
 	{
-		return array_shift($this->queue);
+		$key = array_shift($this->queue);
+		array_splice($this->queue, 0, 1);
+		return $key;
 	}
 
 	public function getQueue()
@@ -25,8 +27,8 @@ class Queue{
 		return $this->queue;
 	}
 
-	public function addItem($item)
+	public function push($obj)
 	{
-		array_push($this->queue, $item);
+		$this->queue[] = $obj;
 	}
 }

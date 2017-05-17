@@ -17,7 +17,7 @@ class DecodedPacket{
     {
       $data = json_decode(trim($data), True);
     }
-    $this->identifier = isset($data["id"]) ? $data["id"] : 1;
+    $this->identifier = isset($data["id"]) ? $data["id"] : 0;
     $this->array = $data;
   }
 
@@ -30,7 +30,7 @@ class DecodedPacket{
   {
     return isset($this->array[$index]) ? $this->array[$index] : null;
   }
-
+  
   public function getAll()
   {
     return $this->array;
