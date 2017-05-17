@@ -29,8 +29,8 @@ class ServerThread extends Thread{
 		$this->logger = new TrinketLogger();
 		$this->logger->warning("Attempting connection to host server...");
 
-		$this->packetQueue = new Queue();
-		$this->messageQueue = new Queue();
+		$this->packetQueue = serialize(new Queue());
+		$this->messageQueue = serialize(new Queue());
 
 		@set_time_limit(0);
 
@@ -70,11 +70,7 @@ class ServerThread extends Thread{
 
 	public function __destruct()
 	{
-		$pk = new Packet();
-		$pk->identifier = Info::TYPE_PACKET_DISCONNECT;
-		$pk->reason = Info::TYPE_DISCONNECT_FORCED;
-		@socket_write($this->socket, $pk->encode());
-		@socket_close($this->socket);
+		$this->kill();
 	}
 
 	public function run()
@@ -91,6 +87,13 @@ class ServerThread extends Thread{
 			if($pk instanceof Packet)
 			{
 				@socket_write($this->socket, $pk->encode());
+			}
+			else
+			{
+				if(!is_null($pk))
+				{
+					var_dump($pk);
+				}
 			}
 
 			$input = @socket_read($this->socket, 1024);
@@ -158,7 +161,7 @@ class ServerThread extends Thread{
 						{
 							continue;
 						}
-						$this->messageQueue->addItem($data["chat"]);
+						$this->messageQueue->add($data["chat"]);
 						continue;
 					}
 					continue;
@@ -170,7 +173,11 @@ class ServerThread extends Thread{
 	public function kill()
 	{
 		$this->isPluginEnabled = False;
-		$this->__destruct();
+		$pk = new Packet();
+		$pk->identifier = Info::TYPE_PACKET_DISCONNECT;
+		$pk->reason = Info::TYPE_DISCONNECT_FORCED;
+		@socket_write($this->socket, $pk->encode());
+		@socket_close($this->socket);
 	}
 
 	public function getLogger()
@@ -185,11 +192,11 @@ class ServerThread extends Thread{
 
 	public function getPacketQueue()
 	{
-		return $this->packetQueue;
+		return unserialize($this->packetQueue);
 	}
 
 	public function getMessageQueue()
 	{
-		return $this->messageQueue;
+		return unserialize($this->messageQueue);
 	}
 }
