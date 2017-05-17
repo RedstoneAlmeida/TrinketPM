@@ -20,10 +20,13 @@ class BroadcastTask extends PluginTask{
 
   public function onRun($currentTick)
   {
-    foreach($this->plugin->getServerThread()->getMessages() as $message)
+    $queue = $this->plugin->getServerThread()->getMessageQueue();
+    if(empty($queue->getQueue()))
     {
-      $this->plugin->getServer()->broadcastMessage($message);
-      $this->plugin->getServerThread()->unset($message);
+      return;
     }
+
+    $next = rtrim($queue->getNext());
+    $this->plugin->getServer()->broadcastMessage($next);
   }
 }

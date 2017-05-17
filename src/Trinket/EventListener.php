@@ -25,7 +25,7 @@ class EventListener implements Listener{
     {
       return;
     }
-    $format = $ev->getPlayer()->getDisplayName() . ": " . $ev->getMessage(); //NEEDS TO BE UPDATED TO SUPPORT PURECHAT ETC.
-    $this->plugin->getServerThread()->addMessage($format);
+    $format = $ev->getMessage(); //NEEDS TO BE UPDATED TO SUPPORT PURECHAT ETC.
+    $this->plugin->getServerThread()->getMessageQueue()->addItem($format);
   }
 }

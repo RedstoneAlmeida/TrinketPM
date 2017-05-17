@@ -21,7 +21,7 @@ class DecodedPacket{
     $this->array = $data;
   }
 
-  public function getID()
+  public function getId()
   {
     return $this->identifier;
   }
@@ -29,5 +29,10 @@ class DecodedPacket{
   public function get($index)
   {
     return isset($this->array[$index]) ? $this->array[$index] : null;
+  }
+
+  public function getAll()
+  {
+    return $this->array;
   }
 }

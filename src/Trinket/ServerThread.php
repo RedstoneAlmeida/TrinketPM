@@ -2,54 +2,45 @@
 namespace Trinket;
 
 use pocketmine\Thread;
-
 use pocketmine\utils\TextFormat;
-
 use Trinket\Network\DecodedPacket;
 use Trinket\Network\Packet;
 use Trinket\Network\Info;
-
 use Trinket\Utils\TrinketLogger;
+use Trinket\Utils\Queue;
 
 /* Copyright (C) ImagicalGamer - All Rights Reserved
  * Unauthorized copying of this file, via any medium is strictly prohibited
  * Proprietary and confidential
  * Written by Jake C <imagicalgamer@outlook.com>, May 2017
  */
-
 class ServerThread extends Thread{
 
-	private $workerId;
-	private $logger;
-	private $host;
-	private $port;
+	private $logger, $socket, $password, $packetQueue, $messageQueue;
+
 	private $isPluginEnabled = True;
 	private $hasErrors = False;
-	private $password;
 	private $connected = False;
-	private $messages = [];
-	private $socket;
-	private $chatEnabled;
 
 	public function __construct($array)
 	{
 		class_exists('Trinket\Network\DecodedPacket');
+
 		$this->logger = new TrinketLogger();
 		$this->logger->warning("Attempting connection to host server...");
+
+		$this->packetQueue = new Queue();
+		$this->messageQueue = new Queue();
 
 		@set_time_limit(0);
 
 		$this->workerId = mt_rand(5000, 10000);
 		$this->password = $array["password"];
 		$this->serverId = $array["id"];
-		$this->chatEnabled = $array["chat-link"];
 
 		$host = isset($array["ip"]) ? $array["ip"] : "0.0.0.0";
 		$host = str_replace(" ", "", $array["ip"]);
 		$port = intval(isset($array["port"]) ? $array["port"] : 33657);
-
-		$this->host = $host;
-		$this->port = $port;
 
 		$this->socket = @socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
 		@socket_set_option($this->socket, SOL_SOCKET, SO_REUSEADDR, 1);
@@ -59,15 +50,15 @@ class ServerThread extends Thread{
 			$this->logger->error("Unable to create socket");
 			return;
 		}
+		$connect = @socket_connect($this->socket, $host, $port);
 
-		$connect = socket_connect($this->socket, $host, $port);
 		if(!$connect)
 		{
 			$this->hasErrors = true;
 			$this->logger->error("Unable to connect to host server");
 			return;
 		}
-
+		@socket_set_nonblock($this->socket);
 		$pk = new Packet();
 		$pk->identifier = Info::TYPE_PACKET_LOGIN;
 		$pk->password = $this->password;
@@ -88,59 +79,64 @@ class ServerThread extends Thread{
 
 	public function run()
 	{
-		while($this->isPluginEnabled === True)
+		while($this->isPluginEnabled)
 		{
 			if($this->connected)
 			{
 				$pk = new Packet();
-				$pk->identifier = Info::TYPE_PACKET_DUMMY;
 				@socket_write($this->socket, $pk->encode());
 			}
+			if(!empty($this->packetQueue->getQueue()))
+			{
+				$pk = $this->packetQueue->getNext();
+				var_dump($pk);
+				if($pk instanceof Packet)
+				{
+					@socket_write($this->socket, $pk->encode());
+				}
+				unset($pk);
+			}
 
-			$read = @socket_read($this->socket, 1024);
-			if(!is_string($read))
+			$input = @socket_read($this->socket, 1024);
+			if(!is_string($input))
 			{
 				continue;
 			}
 
-			$pk = new DecodedPacket($read);
+			$pk = new DecodedPacket($input);
+			var_dump($pk);
 
-			switch($pk->getID())
+			switch($pk->getId())
 			{
 				case Info::TYPE_PACKET_UNKNOWN:
 				case Info::TYPE_PACKET_DUMMY:
 					continue;
 				break;
+
 				case Info::TYPE_PACKET_LOGIN:
 					if($this->connected)
 					{
 						continue;
 					}
 
-					if($pk->get("data"))
+					$data = $pk->getAll();
+					if($data["error"] === Info::TYPE_ERROR_INVALID_PASSWORD)
 					{
-						$this->connected = true;
-						$this->getLogger()->info("Connected to host server!");
+						$this->getLogger()->warning("Unable to connect to host server! Invalid Password.");
 						continue;
 					}
-
-					$error = $pk->get("error");
-					if($error === Info::ERROR_INVALID_PASSWORD)
-					{
-						$this->getLogger()->error("Unable to connect to host server error: Invalid Password");
-						$this->isPluginEnabled = False;
-					}
-					elseif($error === Info::ERROR_INVALID_DATA)
+					elseif($data["error"] === Info::TYPE_ERROR_INVALID_PACKET)
 					{
 						$pk = new Packet();
 						$pk->identifier = Info::TYPE_PACKET_LOGIN;
-						$pk->password = $password;
+						$pk->password = $this->password;
 						@socket_write($this->socket, $pk->encode());
-						$this->start();
 						continue;
 					}
-					else
+					elseif($data["error"] === Info::TYPE_ERROR_EMPTY && $data["data"] === True)
 					{
+						$this->connected = True;
+						$this->getLogger()->info("Connected to host server.");
 						continue;
 					}
 				break;
@@ -150,27 +146,33 @@ class ServerThread extends Thread{
 						continue;
 					}
 
-					$this->isPluginEnabled = False;
-					$this->getLogger()->warning("Disconnected from host server!");
+					$this->connected = False;
+					$this->getLogger()->warning("Disconnected from host server.");
 					continue;
 				break;
-				case Info::TYPE_PACKET_SEND:
+				case Info::TYPE_PACKET_COMMAND_REQUEST:
+					continue;
+				break;
+				case Info::TYPE_PACKET_DATA_REQUEST:
+					continue;
+				break;
+				case Info::TYPE_PACKET_DATA_SEND:
 					if(!$this->connected)
 					{
 						continue;
 					}
 
-					if(!$this->chatEnabled)
+					$data = $pk->getAll();
+					if($data["data"] === Info::TYPE_DATA_CHAT)
 					{
+						if($data["chat"] === "")
+						{
+							continue;
+						}
+						$this->messageQueue->addItem($data["chat"]);
 						continue;
 					}
-
-					$msg = trim($pk->get("chat"));
-					if(empty($msg) or $msg === "")
-					{
-						continue;
-					}
-					$this->broascastMessage($msg, $pk->get("select"));
+					continue;
 				break;
 			}
 		}
@@ -191,31 +193,13 @@ class ServerThread extends Thread{
 		return $this->hasErrors;
 	}
 
-	public function broascastMessage(String $msg, $select)
+	public function getPacketQueue()
 	{
-		array_push($this->messages, [$msg, $select]);
+		return $this->packetQueue;
 	}
 
-	public function addMessage($msg)
+	public function getMessageQueue()
 	{
-		if(!$this->chatEnabled)
-		{
-			return;
-		}
-		$pk = new Packet();
-		$pk->identifier = Info::TYPE_PACKET_DATA_SEND;
-		$pk->chat = (string) $msg;
-		$pk->data = Info::TYPE_DATA_CHAT;
-		@socket_write($this->socket, $pk->encode());
-	}
-
-	public function getMessages()
-	{
-		return $this->messages;
-	}
-
-	public function unset($msg)
-	{
-		unset($this->messages[$msg]);
+		return $this->messageQueue;
 	}
 }

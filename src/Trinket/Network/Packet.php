@@ -9,23 +9,23 @@ namespace Trinket\Network;
 
 class Packet{
   
-  public $identifier, $error, $password, $data, $protocol, $reason, $chat, $selection, $serverid;
+  public $identifier, $error, $password, $data, $protocol, $reason, $chat, $selection, $serverId;
 
   public function __construct()
   {
     $this->identifier = Info::TYPE_PACKET_DUMMY;
-    $this->error = Info::TYPE_ERROR_EMPTY;
-    $this->password = Info::TYPE_STRING_EMPTY;
-    $this->data = [];
-    $this->protocol = Info::PROTOCOL;
-    $this->reason = Info::TYPE_STRING_EMPTY;
-    $this->chat = Info::TYPE_STRING_EMPTY;
-    $this->selection = Info::TYPE_SELECTION_PLAYERS_ALL;
-    $this->serverId = 0;
+    $this->error = '';
+    $this->password = '';
+    $this->data = '';
+    $this->protocol = '';
+    $this->reason = '';
+    $this->chat = '';
+    $this->selection = '';
+    $this->serverId = '';
   }
 
   public function encode()
   {
-    return json_encode(["id" => $this->identifier, "error" => $this->error, "password" => $this->password, "data" => $this->data, "protocol" => $this->protocol, "reason" => $this->reason, "chat" => $this->chat, "selection" => $this->selection, "serverId" => $this->serverId]);
+    return str_pad(json_encode(["id" => $this->identifier, "error" => $this->error, "password" => $this->password, "data" => $this->data, "protocol" => $this->protocol, "reason" => $this->reason, "chat" => $this->chat, "selection" => $this->selection, "serverId" => $this->serverId]), 1024);
   }
 }
