@@ -57,6 +57,8 @@ class Trinket extends PluginBase{
     $this->getServer()->getScheduler()->scheduleRepeatingTask(new PacketSendTask($this, $this->tlogger, $this->socket), 15);
     $this->getServer()->getScheduler()->scheduleRepeatingTask(new CommandExecuteTask($this, $this->tlogger, $this->threadedqueue), 20);
     $this->readtask = new PacketReadTask($this->tlogger, $this->socket, $this->threadedqueue);
+
+    $this->getServer()->getPluginManager()->registerEvents(new EventListener($this), $this);
   }
 
   public function onDisable() {

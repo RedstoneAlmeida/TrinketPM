@@ -51,10 +51,19 @@ class PacketReadTask extends Thread{
 					$pk = new DataPacket();
 					$pk->id = Info::TYPE_PACKET_DUMMY;
 					$this->socket->direct($pk);
+
+					unset($pk);
+					$pk = new DataPacket();
+					$pk->id = Info::TYPE_PACKET_INFO_SEND;
+					$pk->data = [];//todo: add a function on main thread that sends latest data to ReadPacketTask
+					$this->socket->direct($pk);
 				break;
 				case Info::TYPE_PACKET_COMMAND_EXECUTE:
 					$cmd = $pk->data;
 					$this->getCommandQueue()->push(rtrim($cmd));
+				break;
+				case Info::TYPE_PACKET_INFO:
+					$info = $pk->data;
 				break;
 			}
 		}
