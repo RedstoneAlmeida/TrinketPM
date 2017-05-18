@@ -16,6 +16,7 @@ use Trinket\Utils\Queue;
 use Trinket\Commands\TrinketCommand;
 
 use Trinket\Tasks\PacketSendTask;
+use Trinket\Tasks\CommandExecuteTask;
 use Trinket\Tasks\PacketReadTask;
 
 /* Copyright (C) ImagicalGamer - All Rights Reserved
@@ -26,7 +27,7 @@ use Trinket\Tasks\PacketReadTask;
 
 class Trinket extends PluginBase{
 
-  private $socket, $tlogger, $packetqueue;
+  private $socket, $tlogger, $packetqueue, $readtask;
 
   public function onEnable()
   {
@@ -51,11 +52,13 @@ class Trinket extends PluginBase{
       $this->getLogger()->warning("TrinketPM is built for PMMP, some features may not work correctly when using " . $this->getServer()->getName());
     }
     $this->packetqueue = new Queue();
+    $this->commandqueue = new Queue();
     $this->socket = new TCPClientSocket(($this->tlogger = new TrinketLogger()), $data["password"], $data["host"], $data["name"]);
     $this->getServer()->getCommandMap()->register("trinket", new TrinketCommand($this));
 
     $this->getServer()->getScheduler()->scheduleRepeatingTask(new PacketSendTask($this, $this->tlogger, $this->socket), 15);
-    $readTask = new PacketReadTask($this->tlogger, $this->socket);
+    $this->getServer()->getScheduler()->scheduleRepeatingTask(new CommandExecuteTask($this, $this->tlogger), 20);
+    $this->readtask = new PacketReadTask($this->tlogger, $this->socket);
   }
 
   public function onDisable()
@@ -67,13 +70,18 @@ class Trinket extends PluginBase{
 
   public function getPacketQueue() : Queue
   {
-    return ($this->packetqueue instanceof Queue) ? $this->packetqueue : $this->setSendQueue(new Queue());
+    return ($this->packetqueue instanceof Queue) ? $this->packetqueue : $this->setPacketQueue(new Queue());
   }
 
   public function setPacketQueue(Queue $packetqueue)
   {
     $this->packetqueue = $packetqueue;
     return $packetqueue;
+  }
+
+  public function getCommandQueue()
+  {
+    return $this->readtask->getCommandQueue();
   }
 
   public function getTCPSocket() : TCPClientSocket

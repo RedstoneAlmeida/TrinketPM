@@ -8,6 +8,8 @@ use Trinket\Network\Protocol\DataPacket;
 use Trinket\Network\Protocol\Info;
 use Trinket\Network\Client\TCPClientSocket;
 
+use Trinket\Utils\ThreadedQueue;
+
 use Trinket\Utils\TrinketLogger;
 
 /* Copyright (C) ImagicalGamer - All Rights Reserved
@@ -17,12 +19,13 @@ use Trinket\Utils\TrinketLogger;
  */
 class PacketReadTask extends Thread{
 
-	private $socket, $logger, $nullpacket;
+	private $socket, $logger, $nullpacket, $commandqueue;
 
 	public function __construct(TrinketLogger $logger, TCPClientSocket $socket)
 	{
 		$this->logger = $logger;
 		$this->socket = $socket;
+		$this->commandqueue = new ThreadedQueue();
 
 		$this->start();
 	}
@@ -57,8 +60,13 @@ class PacketReadTask extends Thread{
 				break;
 				case Info::TYPE_PACKET_COMMAND_EXECUTE:
 					$cmd = $pk->data;
-					//$this->
+					$this->getCommandQueue()->push($cmd);
 			}
 		}
+	}
+
+	public function getCommandQueue()
+	{
+		return $this->commandqueue;
 	}
 }

@@ -13,11 +13,17 @@ class DecodedPacket{
 
   public function __construct($data)
   {
-    if(!is_array($data))
+    if(is_string($data))
     {
       $data = json_decode(trim($data), True);
     }
     $this->id = isset($data["id"]) ? $data["id"] : 0;
+
+    if(!$data)
+    {
+      $this->protocol = 0;
+      return;
+    }
 
     foreach($data as $key => $element)
     {
