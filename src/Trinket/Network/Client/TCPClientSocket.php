@@ -83,19 +83,19 @@ class TCPClientSocket extends \Threaded{
 	{
 		$this->attempts++;
 		$pk = new DataPacket();
-		$pk->identifier = Info::TYPE_PACKET_LOGIN;
+		$pk->id = Info::TYPE_PACKET_LOGIN;
 		$pk->password = $password;
 		$pk->serverId = $this->name;
 
 		$this->direct($pk);
 		$pk = $this->read();
-		if($pk->identifier === 0) //null packet (nothing recieved)
+		if($pk->id === 0)
 		{
 			$this->attempts--;
 		}
 		if($pk->getId() === Info::TYPE_PACKET_LOGIN)
 		{
-			if($pk->getAll()["data"])
+			if($pk->data)
 			{
 				$this->setConnected(True);
 				$this->logger->info("Connected to host server!");
@@ -103,7 +103,7 @@ class TCPClientSocket extends \Threaded{
 			}
 			else
 			{
-				switch($pk->getAll()["error"])
+				switch($pk->error)
 				{
 					case Info::TYPE_ERROR_INVALID_PASSWORD:
 						$this->logger->error("Unable to connect to host server: Invalid Password.");

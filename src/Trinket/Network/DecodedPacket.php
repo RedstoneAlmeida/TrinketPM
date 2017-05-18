@@ -9,7 +9,7 @@ namespace Trinket\Network;
 
 class DecodedPacket{
   
-  public $identifier, $array;
+  public $id;
 
   public function __construct($data)
   {
@@ -17,22 +17,16 @@ class DecodedPacket{
     {
       $data = json_decode(trim($data), True);
     }
-    $this->identifier = isset($data["id"]) ? $data["id"] : 0;
-    $this->array = $data;
+    $this->id = isset($data["id"]) ? $data["id"] : 0;
+
+    foreach($data as $key => $element)
+    {
+      $this->{$key} = $element;
+    }
   }
 
   public function getId()
   {
-    return $this->identifier;
-  }
-
-  public function get($index)
-  {
-    return isset($this->array[$index]) ? $this->array[$index] : null;
-  }
-  
-  public function getAll()
-  {
-    return $this->array;
+    return $this->id;
   }
 }

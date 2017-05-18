@@ -33,21 +33,21 @@ class PacketSendTask extends PluginTask{
 
 	public function onRun($currentTick)
 	{
-		$queue = $this->plugin->getSendQueue()->getQueue();
+		$queue = $this->plugin->getPacketQueue()->getQueue();
 
 		if(empty($queue))
 		{
 			return;
 		}
 
-		$pk = $this->plugin->getSendQueue()->getNext();
+		$pk = $this->plugin->getPacketQueue()->getNext();
 		if(!$pk instanceof DataPacket)
 		{
 			$this->logger->debug("Instance of non-packet detected in send queue");
 			return;
 		}
 
-		$this->logger->debug("Sent packet with identifier " . $pk->getId());
+		$this->logger->debug("Sent packet with id " . $pk->getId());
 		$this->socket->direct($pk);
 	}
 }

@@ -26,7 +26,7 @@ use Trinket\Tasks\PacketReadTask;
 
 class Trinket extends PluginBase{
 
-  private $socket, $tlogger, $queue;
+  private $socket, $tlogger, $packetqueue;
 
   public function onEnable()
   {
@@ -50,7 +50,7 @@ class Trinket extends PluginBase{
     {
       $this->getLogger()->warning("TrinketPM is built for PMMP, some features may not work correctly when using " . $this->getServer()->getName());
     }
-    $this->queue = new Queue();
+    $this->packetqueue = new Queue();
     $this->socket = new TCPClientSocket(($this->tlogger = new TrinketLogger()), $data["password"], $data["host"], $data["name"]);
     $this->getServer()->getCommandMap()->register("trinket", new TrinketCommand($this));
 
@@ -61,19 +61,19 @@ class Trinket extends PluginBase{
   public function onDisable()
   {
     $pk = new DataPacket();
-    $pk->identifier = Info::TYPE_PACKET_DISCONNECT;
+    $pk->id = Info::TYPE_PACKET_DISCONNECT;
     $this->socket->direct($pk);
   }
 
-  public function getSendQueue() : Queue
+  public function getPacketQueue() : Queue
   {
-    return ($this->queue instanceof Queue) ? $this->queue : $this->setSendQueue(new Queue());
+    return ($this->packetqueue instanceof Queue) ? $this->packetqueue : $this->setSendQueue(new Queue());
   }
 
-  public function setSendQueue(Queue $queue)
+  public function setPacketQueue(Queue $packetqueue)
   {
-    $this->queue = $queue;
-    return $queue;
+    $this->packetqueue = $packetqueue;
+    return $packetqueue;
   }
 
   public function getTCPSocket() : TCPClientSocket
