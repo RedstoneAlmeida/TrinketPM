@@ -2,7 +2,7 @@
 namespace Trinket\Network\Client;
 
 use Trinket\Network\DecodedPacket;
-use Trinket\Network\Protocol\Packet;
+use Trinket\Network\Protocol\DataPacket;
 use Trinket\Network\Protocol\Info;
 use Trinket\Utils\TrinketLogger;
 
@@ -52,7 +52,7 @@ class TCPClientSocket{
 		$this->connect($password);
 	}
 
-	public function direct(Packet $pk)
+	public function direct(DataPacket $pk)
 	{
 		@socket_write($this->socket, $pk->encode());
 	}
@@ -80,7 +80,7 @@ class TCPClientSocket{
 	public function connect($password)
 	{
 		$this->attempts++;
-		$pk = new Packet();
+		$pk = new DataPacket();
 		$pk->identifier = Info::TYPE_PACKET_LOGIN;
 		$pk->password = $password;
 

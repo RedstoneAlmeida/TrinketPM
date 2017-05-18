@@ -2,7 +2,7 @@
 namespace Trinket\Commands;
 
 use Trinket\Trinket;
-use Trinket\Network\Protocol\Packet;
+use Trinket\Network\Protocol\DataPacket;
 use Trinket\Network\Protocol\Info;
 
 use pocketmine\command\CommandSender;
@@ -39,7 +39,7 @@ class TrinketCommand extends BaseCommand{
         {
             case "test":
                 $sender->sendMessage("Sending dummy packet to host.");
-                $pk = new Packet();
+                $pk = new DataPacket();
                 $this->plugin->getSendQueue()->push($pk);
             break;
             case "info":

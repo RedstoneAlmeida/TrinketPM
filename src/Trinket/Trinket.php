@@ -43,7 +43,10 @@ class Trinket extends PluginBase{
       $this->getLogger()->warning("Unable to locate 'password' in " . $this->getDataFolder() . "config.yml");
       return;
     }
-
+    if($this->getServer()->getName() !== "PocketMine-MP")
+    {
+      $this->getLogger()->warning("TrinketPM is built for PMMP, some features may not work correctly when using " . $this->getServer()->getName());
+    }
     $this->queue = new Queue();
     $this->socket = new TCPClientSocket(($this->tlogger = new TrinketLogger()), $data["password"], $data["host"]);
     $this->getServer()->getCommandMap()->register("trinket", new TrinketCommand($this));

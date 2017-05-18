@@ -4,7 +4,7 @@ namespace Trinket\Tasks;
 use pocketmine\Thread;
 
 use Trinket\Network\DecodedPacket;
-use Trinket\Network\Protocol\Packet;
+use Trinket\Network\Protocol\DataPacket;
 use Trinket\Network\Protocol\Info;
 use Trinket\Network\Client\TCPClientSocket;
 

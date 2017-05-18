@@ -7,7 +7,7 @@ namespace Trinket\Network\Protocol;
  * Written by Jake C <imagicalgamer@outlook.com>, May 2017
  */
 
-class Packet{
+class DataPacket{
   
   public $identifier, $error, $password, $data, $protocol, $reason, $chat, $selection, $serverId;
 

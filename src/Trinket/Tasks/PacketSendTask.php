@@ -3,7 +3,7 @@ namespace Trinket\Tasks;
 
 use pocketmine\scheduler\PluginTask;
 
-use Trinket\Network\Protocol\Packet;
+use Trinket\Network\Protocol\DataPacket;
 use Trinket\Network\Protocol\Info;
 
 use Trinket\Network\Client\TCPClientSocket;
@@ -41,7 +41,7 @@ class PacketSendTask extends PluginTask{
 		}
 
 		$pk = $this->plugin->getSendQueue()->getNext();
-		if(!$pk instanceof Packet)
+		if(!$pk instanceof DataPacket)
 		{
 			$this->logger->debug("Instance of non-packet detected in send queue");
 			return;
