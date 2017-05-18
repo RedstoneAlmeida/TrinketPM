@@ -32,12 +32,12 @@ class PacketReadTask extends Thread{
 		while($this->socket->isConnected())
 		{
 			$pk = $this->socket->read();
-			if($pk->getId() === 0)
-			{
-				continue;//null packet recieved TODO: keep connection alive with dummy packet
-			}
 			if(intval($pk->get("protocol")) !== Info::PROTOCOL)
 			{
+				if(intval($pk->get("protocol")) === 0)
+				{
+					continue; //null packet
+				}
 				$arg = ($pk->get("protocol") > Info::PROTOCOL) ? "outdated" : "unknown";
 				$this->logger->error("Recieved packet with " . $arg . " protocol.");
 				continue;
@@ -45,7 +45,6 @@ class PacketReadTask extends Thread{
 			switch($pk->getId())
 			{
 				case Info::TYPE_PACKET_LOGIN:
-				case Info::TYPE_PACKET_COMMAND:
 					continue;
 				break;
 				case Info::TYPE_PACKET_DISCONNECT:

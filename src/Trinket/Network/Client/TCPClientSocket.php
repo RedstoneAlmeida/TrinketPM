@@ -15,7 +15,7 @@ use Trinket\Utils\Exceptions\AuthenticationError;
  * Written by Jake C <imagicalgamer@outlook.com>, May 2017
  */
 
-class TCPClientSocket{
+class TCPClientSocket extends \Threaded{
 
 	private $logger, $socket, $name;
 	private $connected = False;
@@ -132,6 +132,5 @@ class TCPClientSocket{
 		$this->logger->warning("Lost connection to host server.");
 		@socket_close($this->socket);
 		$this->setConnected(False);
-		return;
 	}
 }
