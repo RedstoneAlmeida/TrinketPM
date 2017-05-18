@@ -19,12 +19,13 @@ class TCPClientSocket{
 
 	private $logger, $socket;
 	private $connected = False;
+	private $attempts = 0;
 
-	public function __construct(TrinketLogger $logger, $password)
+	public function __construct(TrinketLogger $logger, $password, $host)
 	{
 		$this->logger = $logger;
 
-		$host = getHostByName(getHostName());
+		$host = ($host !== "") ? $host : getHostByName(getHostName());
 		$port = 33657;
 
 		$option = @set_time_limit(0);
@@ -33,10 +34,18 @@ class TCPClientSocket{
 		$connect = @socket_connect($sock, $host, $port);
 		$option = @set_time_limit(0);
 		$option = @socket_set_nonblock($sock);
-
-		if(!$connect or !$sock)
+		$this->logger->warning("Attempting to connect to host on " . $host . ":" . $port);
+		if(!$sock)
 		{
-			throw new SocketError("Unknown Error Occured: Unable to connect to host server");
+			$errorcode = socket_last_error();
+			$errormsg = str_replace([PHP_EOL, "\n"], "", socket_strerror($errorcode));
+			$this->logger->warning("Couldn't create socket: [" . $errorcode . "] " . $errormsg);
+		}
+		if(!$connect)
+		{
+			$errorcode = socket_last_error();
+			$errormsg = str_replace([PHP_EOL, "\n"], "", socket_strerror($errorcode));
+			$this->logger->warning("Couldn't connect to host: [" . $errorcode . "] " . $errormsg);
 		}
 
 		$this->socket = $sock;
@@ -70,6 +79,7 @@ class TCPClientSocket{
 
 	public function connect($password)
 	{
+		$this->attempts++;
 		$pk = new Packet();
 		$pk->identifier = Info::TYPE_PACKET_LOGIN;
 		$pk->password = $password;
@@ -89,11 +99,16 @@ class TCPClientSocket{
 				switch($pk->getAll()["error"])
 				{
 					case Info::TYPE_ERROR_INVALID_PASSWORD:
-						throw new AuthenticationError("Unable to connect to host server: Invalid Password.");
+						$this->logger->error("Unable to connect to host server: Invalid Password.");
 					break;
 				}
 				return;
 			}
+		}
+
+		if(!$this->isConnected() && $this->attempts < 5)
+		{
+			$this->connect($password);
 		}
 	}
 

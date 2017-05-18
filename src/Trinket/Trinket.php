@@ -10,7 +10,7 @@ use Trinket\Network\Client\TCPClientSocket;
 use Trinket\Utils\TrinketLogger;
 use Trinket\Utils\Queue;
 
-use Trinket\Commands\PacketCommand;
+use Trinket\Commands\TrinketCommand;
 
 use Trinket\Tasks\PacketSendTask;
 use Trinket\Tasks\PacketReadTask;
@@ -45,8 +45,8 @@ class Trinket extends PluginBase{
     }
 
     $this->queue = new Queue();
-    $this->socket = new TCPClientSocket(($this->tlogger = new TrinketLogger()), $data["password"]);
-    $this->getServer()->getCommandMap()->register("packet", new PacketCommand($this));
+    $this->socket = new TCPClientSocket(($this->tlogger = new TrinketLogger()), $data["password"], $data["host"]);
+    $this->getServer()->getCommandMap()->register("trinket", new TrinketCommand($this));
 
     $this->getServer()->getScheduler()->scheduleRepeatingTask(new PacketSendTask($this, $this->tlogger, $this->socket), 25);//send packets from queue every 1.25 sec
     $readTask = new PacketReadTask($this->tlogger, $this->socket);

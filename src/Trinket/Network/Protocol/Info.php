@@ -24,5 +24,5 @@ class Info{
   const TYPE_SELECTION_PLAYERS_OP = 10111001;
   const TYPE_DATA_CLIENTLIST = 10010000;
   const TYPE_DATA_CHAT = 11001000;
-  const PROTOCOL = '1.0.0';
+  const PROTOCOL = 157;
 }
