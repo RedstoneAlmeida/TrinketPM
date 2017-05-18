@@ -29,15 +29,18 @@ class PacketReadTask extends Thread{
 
 	public function run()
 	{
-		while($this->socket->isConnected() && $this->socket->isEnabled())
+		while($this->socket->isConnected())
 		{
 			$pk = $this->socket->read();
 			switch($pk->getId())
 			{
 				case Info::TYPE_PACKET_LOGIN:
 				case Info::TYPE_PACKET_DUMMY:
-				case Info::TYPE_PACKET_UNKNOWN:
+				case Info::TYPE_PACKET_COMMAND:
 					continue;
+				break;
+				case Info::TYPE_PACKET_DISCONNECT:
+					$this->socket->shutdown();
 				break;
 			}
 		}

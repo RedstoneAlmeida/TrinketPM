@@ -112,8 +112,15 @@ class TCPClientSocket{
 		}
 	}
 
-	public function isEnabled()
+	public function shutdown($forced = falsee)
 	{
-		return false;
+		if($forced)
+		{
+			$this->logger->warning("Socket force closed.");
+		}
+		$this->logger->warning("Lost connected to host server.");
+		@socket_close($this->socket);
+		$this->setConnected(False);
+		return;
 	}
 }
