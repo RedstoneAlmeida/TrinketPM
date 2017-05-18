@@ -48,10 +48,10 @@ class Trinket extends PluginBase{
       $this->getLogger()->warning("TrinketPM is built for PMMP, some features may not work correctly when using " . $this->getServer()->getName());
     }
     $this->queue = new Queue();
-    $this->socket = new TCPClientSocket(($this->tlogger = new TrinketLogger()), $data["password"], $data["host"]);
+    $this->socket = new TCPClientSocket(($this->tlogger = new TrinketLogger()), $data["password"], $data["host"], $data["name"]);
     $this->getServer()->getCommandMap()->register("trinket", new TrinketCommand($this));
 
-    $this->getServer()->getScheduler()->scheduleRepeatingTask(new PacketSendTask($this, $this->tlogger, $this->socket), 25);//send packets from queue every 1.25 sec
+    $this->getServer()->getScheduler()->scheduleRepeatingTask(new PacketSendTask($this, $this->tlogger, $this->socket), 15);
     $readTask = new PacketReadTask($this->tlogger, $this->socket);
   }
 

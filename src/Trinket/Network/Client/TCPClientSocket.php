@@ -17,18 +17,18 @@ use Trinket\Utils\Exceptions\AuthenticationError;
 
 class TCPClientSocket{
 
-	private $logger, $socket;
+	private $logger, $socket, $name;
 	private $connected = False;
 	private $attempts = 0;
 
-	public function __construct(TrinketLogger $logger, $password, $host)
+	public function __construct(TrinketLogger $logger, $password, $host, $name)
 	{
 		$this->logger = $logger;
+		$this->name = $name;
 
 		$host = ($host !== "") ? $host : getHostByName(getHostName());
 		$port = 33657;
 
-		$option = @set_time_limit(0);
 		$sock = @socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
 		$option = @socket_set_option($sock, SOL_SOCKET, SO_REUSEADDR, 1);
 		$connect = @socket_connect($sock, $host, $port);
@@ -40,12 +40,14 @@ class TCPClientSocket{
 			$errorcode = socket_last_error();
 			$errormsg = str_replace([PHP_EOL, "\n"], "", socket_strerror($errorcode));
 			$this->logger->warning("Couldn't create socket: [" . $errorcode . "] " . $errormsg);
+			return;
 		}
 		if(!$connect)
 		{
 			$errorcode = socket_last_error();
 			$errormsg = str_replace([PHP_EOL, "\n"], "", socket_strerror($errorcode));
 			$this->logger->warning("Couldn't connect to host: [" . $errorcode . "] " . $errormsg);
+			return;
 		}
 
 		$this->socket = $sock;
@@ -83,9 +85,14 @@ class TCPClientSocket{
 		$pk = new DataPacket();
 		$pk->identifier = Info::TYPE_PACKET_LOGIN;
 		$pk->password = $password;
+		$pk->serverId = $this->name;
 
 		$this->direct($pk);
 		$pk = $this->read();
+		if($pk->identifier === 0) //null packet (nothing recieved)
+		{
+			$this->attempts--;
+		}
 		if($pk->getId() === Info::TYPE_PACKET_LOGIN)
 		{
 			if($pk->getAll()["data"])
@@ -100,25 +107,29 @@ class TCPClientSocket{
 				{
 					case Info::TYPE_ERROR_INVALID_PASSWORD:
 						$this->logger->error("Unable to connect to host server: Invalid Password.");
+						return;
+					break;
+					case Info::TYPE_ERROR_SERVER_ID:
+						$this->logger->error("Unable to connect to host server: Invalid ServerID.");
+						return;
 					break;
 				}
-				return;
 			}
 		}
 
-		if(!$this->isConnected() && $this->attempts < 5)
+		if(!$this->isConnected() && $this->attempts < 10)
 		{
 			$this->connect($password);
 		}
 	}
 
-	public function shutdown($forced = falsee)
+	public function shutdown($forced = false)
 	{
 		if($forced)
 		{
-			$this->logger->warning("Socket force closed.");
+			$this->logger->warning("Socket force closing.");
 		}
-		$this->logger->warning("Lost connected to host server.");
+		$this->logger->warning("Lost connection to host server.");
 		@socket_close($this->socket);
 		$this->setConnected(False);
 		return;
