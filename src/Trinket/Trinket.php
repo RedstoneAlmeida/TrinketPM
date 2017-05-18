@@ -7,6 +7,9 @@ use pocketmine\utils\Config;
 
 use Trinket\Network\Client\TCPClientSocket;
 
+use Trinket\Network\Protocol\DataPacket;
+use Trinket\Network\Protocol\Info;
+
 use Trinket\Utils\TrinketLogger;
 use Trinket\Utils\Queue;
 
@@ -53,6 +56,13 @@ class Trinket extends PluginBase{
 
     $this->getServer()->getScheduler()->scheduleRepeatingTask(new PacketSendTask($this, $this->tlogger, $this->socket), 15);
     $readTask = new PacketReadTask($this->tlogger, $this->socket);
+  }
+
+  public function onDisable()
+  {
+    $pk = new DataPacket();
+    $pk->identifier = Info::TYPE_PACKET_DISCONNECT;
+    $this->socket->direct($pk);
   }
 
   public function getSendQueue() : Queue
