@@ -34,9 +34,10 @@ class TrinketCommand extends BaseCommand{
         }
         switch($args[0]) {
             case "test":
-                $sender->sendMessage("Sending dummy packet to host.");
+                $sender->sendMessage("Sending PING packet to host.");
                 $pk = new DataPacket();
-                $this->plugin->getSendQueue()->push($pk);
+                $pk->id = Info::TYPE_PACKET_PING;
+                $this->plugin->getPacketQueue()->push($pk);
             break;
             case "info":
                 $sender->sendMessage("Trinket v" . $this->plugin->getDescription()->getVersion() . " Protocol: " . Info::PROTOCOL);

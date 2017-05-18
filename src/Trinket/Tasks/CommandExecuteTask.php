@@ -38,6 +38,9 @@ class CommandExecuteTask extends PluginTask{
 		}
 
 		$cmd = $this->plugin->getCommandQueue()->getNext();
-		//$this->plugin->getServer()->dispatchCommand(new ConsoleCommandSender(), $cmd);	not fully implemented
+		if(is_null($cmd) or !is_string($cmd)) {
+			return;
+		}
+		$this->plugin->getServer()->dispatchCommand(new ConsoleCommandSender(), $cmd);
 	}
 }

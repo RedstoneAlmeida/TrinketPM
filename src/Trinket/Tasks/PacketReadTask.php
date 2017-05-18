@@ -41,6 +41,8 @@ class PacketReadTask extends Thread{
 				continue;
 			}
 			switch($pk->getId()) {
+				case Info::TYPE_PACKET_PONG:
+					$this->logger->info("PONG.");
 				case Info::TYPE_PACKET_LOGIN:
 					continue;
 				break;

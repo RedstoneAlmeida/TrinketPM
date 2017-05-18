@@ -10,6 +10,9 @@ class Info{
 
     const TYPE_PACKET_UNKNOWN = 00;
 
+    const TYPE_PACKET_PING = "ping";
+    const TYPE_PACKET_PONG = "pong";
+
     const TYPE_PACKET_DUMMY = 1;
 
     const TYPE_PACKET_DATA_REQUEST = 37;
