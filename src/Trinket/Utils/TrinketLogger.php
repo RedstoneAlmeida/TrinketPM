@@ -16,8 +16,7 @@ class TrinketLogger{
   const INFO = 2;
   const WARNING = 3;
 
-  protected function send($message, $level, $prefix, $color)
-  {
+  protected function send($message, $level, $prefix, $color) {
     $now = time();
     $threadName = "TrinketThread";
     $message = TextFormat::toANSI(TextFormat::AQUA . "[" . date("H:i:s", $now) . "] " . TextFormat::RESET . $color . "[" . $threadName . "/" . $prefix . "]:" . " " . $message . TextFormat::RESET);
@@ -25,28 +24,23 @@ class TrinketLogger{
     echo($message . PHP_EOL);
   }
 
-  public function critical($message)
-  {
+  public function critical($message) {
     $this->send($message, TrinketLogger::CRITICAL, "CRITICAL", TextFormat::RED);
   }
 
-  public function error($message)
-  {
+  public function error($message) {
     $this->send($message, TrinketLogger::ERROR, "ERROR", TextFormat::DARK_RED);
   }
 
-  public function warning($message)
-  {
+  public function warning($message) {
     $this->send($message, TrinketLogger::WARNING, "WARNING", TextFormat::YELLOW);
   }
 
-  public function info($message)
-  {
+  public function info($message) {
     $this->send($message, TrinketLogger::INFO, "INFO", TextFormat::WHITE);
   }
 
-  public function debug($message)
-  {
+  public function debug($message) {
     $this->send($message, TrinketLogger::DEBUG, "DEBUG", TextFormat::GRAY);
   }
 }

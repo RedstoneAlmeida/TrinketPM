@@ -3,6 +3,8 @@ namespace Trinket\Tasks;
 
 use pocketmine\scheduler\PluginTask;
 
+use pocketmine\command\ConsoleCommandSender;
+
 use Trinket\Network\Protocol\DataPacket;
 use Trinket\Network\Protocol\Info;
 
@@ -22,24 +24,20 @@ class CommandExecuteTask extends PluginTask{
 
 	private $socket, $logger, $plugin;
 
-	public function __construct(Trinket $plugin, TrinketLogger $logger)
-	{
+	public function __construct(Trinket $plugin, TrinketLogger $logger) {
 		$this->plugin = $plugin;
 		$this->logger = $logger;
 
 		parent::__construct($plugin);
 	}
 
-	public function onRun($currentTick)
-	{
-		$queue = $this->plugin->getCommandQueue()->getQueue();
-
-		if(empty($queue))
-		{
+	public function onRun($currentTick) {
+		$queue = $this->plugin->getCommandQueue();
+		if(empty($queue)) {
 			return;
 		}
 
 		$cmd = $this->plugin->getCommandQueue()->getNext();
-		echo($cmd);
+		$this->plugin->getServer()->dispatchCommand(new ConsoleCommandSender(), $cmd);	
 	}
 }

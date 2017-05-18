@@ -6,30 +6,27 @@ namespace Trinket\Utils;
  * Proprietary and confidential
  * Written by Jake C <imagicalgamer@outlook.com>, May 2017
  */
-class ThreadedQueue{
+class ThreadedQueue extends \Threaded{
 
 	private $queue;
 
-	public function __construct()
-	{
+	public function __construct() {
 		$this->queue = serialize([]);
 	}
 
-	public function getNext()
-	{
+	public function getNext() {
 		$queue = unserialize($this->queue);
 		$key = array_shift($queue);
 		array_splice($queue, 0, 1);
+		$this->queue = serialize($queue);
 		return $key;
 	}
 
-	public function getQueue()
-	{
+	public function getQueue() {
 		return unserialize($this->queue);
 	}
 
-	public function push($obj)
-	{
+	public function push($obj) {
 		$queue = unserialize($this->queue);
 		$queue[] = $obj;
 		$this->queue = serialize($queue);

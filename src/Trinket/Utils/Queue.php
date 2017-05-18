@@ -10,25 +10,21 @@ class Queue{
 
 	private $queue;
 
-	public function __construct()
-	{
+	public function __construct() {
 		$this->queue = [];
 	}
 
-	public function getNext()
-	{
+	public function getNext() {
 		$key = array_shift($this->queue);
 		array_splice($this->queue, 0, 1);
 		return $key;
 	}
 
-	public function getQueue()
-	{
+	public function getQueue() {
 		return $this->queue;
 	}
 
-	public function push($obj)
-	{
+	public function push($obj) {
 		$this->queue[] = $obj;
 	}
 }

@@ -17,26 +17,22 @@ class TrinketCommand extends BaseCommand{
 
     private $plugin;
 
-    public function __construct(Trinket $plugin){
+    public function __construct(Trinket $plugin) {
         parent::__construct("trinket", $plugin);
         $this->plugin = $plugin;
     }
 
-    public function execute(CommandSender $sender, $commandLabel, array $args) 
-    {
-        if($sender instanceof Player)
-        {
+    public function execute(CommandSender $sender, $commandLabel, array $args) {
+        if($sender instanceof Player) {
             $sender->sendMessage("Unable to run command as player.");
             return false;
         }
 
-        if(!isset($args[0]))
-        {
+        if(!isset($args[0])) {
             $sender->sendMessage("Usage: /trinket <test:info>");
             return;
         }
-        switch($args[0])
-        {
+        switch($args[0]) {
             case "test":
                 $sender->sendMessage("Sending dummy packet to host.");
                 $pk = new DataPacket();

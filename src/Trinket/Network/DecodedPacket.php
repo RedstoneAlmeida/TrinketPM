@@ -11,28 +11,23 @@ class DecodedPacket{
   
   public $id;
 
-  public function __construct($data)
-  {
-    if(is_string($data))
-    {
+  public function __construct($data) {
+    if(is_string($data)) {
       $data = json_decode(trim($data), True);
     }
     $this->id = isset($data["id"]) ? $data["id"] : 0;
 
-    if(!$data)
-    {
+    if(!$data) {
       $this->protocol = 0;
       return;
     }
 
-    foreach($data as $key => $element)
-    {
+    foreach($data as $key => $element) {
       $this->{$key} = $element;
     }
   }
 
-  public function getId()
-  {
+  public function getId() {
     return $this->id;
   }
 }

@@ -19,34 +19,28 @@ use Trinket\Utils\TrinketLogger;
  */
 class PacketReadTask extends Thread{
 
-	private $socket, $logger, $nullpacket, $commandqueue;
+	private $socket, $logger, $nullpacket, $threadedqueue;
 
-	public function __construct(TrinketLogger $logger, TCPClientSocket $socket)
-	{
+	public function __construct(TrinketLogger $logger, TCPClientSocket $socket, ThreadedQueue $threadedqueue) {
 		$this->logger = $logger;
 		$this->socket = $socket;
-		$this->commandqueue = new ThreadedQueue();
+		$this->threadedqueue = $threadedqueue;
 
 		$this->start();
 	}
 
-	public function run()
-	{
-		while($this->socket->isConnected())
-		{
+	public function run() {
+		while($this->socket->isConnected()) {
 			$pk = $this->socket->read();
-			if(intval($pk->protocol) !== Info::PROTOCOL)
-			{
-				if(intval($pk->protocol) === 0)
-				{
+			if(intval($pk->protocol) !== Info::PROTOCOL) {
+				if(intval($pk->protocol) === 0) {
 					continue;
 				}
 				$arg = ($pk->protocol > Info::PROTOCOL) ? "outdated" : "unknown";
 				$this->logger->error("Recieved packet with " . $arg . " protocol.");
 				continue;
 			}
-			switch($pk->getId())
-			{
+			switch($pk->getId()) {
 				case Info::TYPE_PACKET_LOGIN:
 					continue;
 				break;
@@ -60,13 +54,13 @@ class PacketReadTask extends Thread{
 				break;
 				case Info::TYPE_PACKET_COMMAND_EXECUTE:
 					$cmd = $pk->data;
-					$this->getCommandQueue()->push($cmd);
+					$this->getCommandQueue()->push(rtrim($cmd));
+				break;
 			}
 		}
 	}
 
-	public function getCommandQueue()
-	{
-		return $this->commandqueue;
+	public function getCommandQueue() {
+		return $this->threadedqueue;
 	}
 }

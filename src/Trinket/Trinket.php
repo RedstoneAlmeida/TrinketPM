@@ -12,6 +12,7 @@ use Trinket\Network\Protocol\Info;
 
 use Trinket\Utils\TrinketLogger;
 use Trinket\Utils\Queue;
+use Trinket\Utils\ThreadedQueue;
 
 use Trinket\Commands\TrinketCommand;
 
@@ -27,28 +28,24 @@ use Trinket\Tasks\PacketReadTask;
 
 class Trinket extends PluginBase{
 
-  private $socket, $tlogger, $packetqueue, $readtask;
+  private $socket, $tlogger, $packetqueue, $readtask, $threadedqueue;
 
-  public function onEnable()
-  {
+  public function onEnable() {
     @mkdir($this->getDataFolder());
     $this->saveDefaultConfig();
 
     $data = (new Config($this->getDataFolder() . "/config.yml", Config::YAML))->getAll();
-    if(!isset($data["id"]))
-    {
+    if(!isset($data["id"])) {
       $data["id"] = uniqid();
       @unlink($this->getDataFolder() . "/config.yml");
       (new Config($this->getDataFolder() . "/config.yml", Config::YAML, $data))->save();
     }
 
-    if(!isset($data["password"]) or $data["password"] === "")
-    {
+    if(!isset($data["password"]) or $data["password"] === "") {
       $this->getLogger()->warning("Unable to locate 'password' in " . $this->getDataFolder() . "config.yml");
       return;
     }
-    if($this->getServer()->getName() !== "PocketMine-MP")
-    {
+    if($this->getServer()->getName() !== "PocketMine-MP") {
       $this->getLogger()->warning("TrinketPM is built for PMMP, some features may not work correctly when using " . $this->getServer()->getName());
     }
     $this->packetqueue = new Queue();
@@ -56,36 +53,32 @@ class Trinket extends PluginBase{
     $this->socket = new TCPClientSocket(($this->tlogger = new TrinketLogger()), $data["password"], $data["host"], $data["name"]);
     $this->getServer()->getCommandMap()->register("trinket", new TrinketCommand($this));
 
+    $this->threadedqueue = new ThreadedQueue();
     $this->getServer()->getScheduler()->scheduleRepeatingTask(new PacketSendTask($this, $this->tlogger, $this->socket), 15);
-    $this->getServer()->getScheduler()->scheduleRepeatingTask(new CommandExecuteTask($this, $this->tlogger), 20);
-    $this->readtask = new PacketReadTask($this->tlogger, $this->socket);
+    $this->getServer()->getScheduler()->scheduleRepeatingTask(new CommandExecuteTask($this, $this->tlogger, $this->threadedqueue), 20);
+    $this->readtask = new PacketReadTask($this->tlogger, $this->socket, $this->threadedqueue);
   }
 
-  public function onDisable()
-  {
+  public function onDisable() {
     $pk = new DataPacket();
     $pk->id = Info::TYPE_PACKET_DISCONNECT;
     $this->socket->direct($pk);
   }
 
-  public function getPacketQueue() : Queue
-  {
+  public function getPacketQueue() : Queue {
     return ($this->packetqueue instanceof Queue) ? $this->packetqueue : $this->setPacketQueue(new Queue());
   }
 
-  public function setPacketQueue(Queue $packetqueue)
-  {
+  public function setPacketQueue(Queue $packetqueue) {
     $this->packetqueue = $packetqueue;
     return $packetqueue;
   }
 
-  public function getCommandQueue()
-  {
+  public function getCommandQueue() {
     return $this->readtask->getCommandQueue();
   }
 
-  public function getTCPSocket() : TCPClientSocket
-  {
+  public function getTCPSocket() : TCPClientSocket {
     return $this->socket;
   }
 }

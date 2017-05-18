@@ -22,8 +22,7 @@ class PacketSendTask extends PluginTask{
 
 	private $socket, $logger, $plugin;
 
-	public function __construct(Trinket $plugin, TrinketLogger $logger, TCPClientSocket $socket)
-	{
+	public function __construct(Trinket $plugin, TrinketLogger $logger, TCPClientSocket $socket) {
 		$this->plugin = $plugin;
 		$this->logger = $logger;
 		$this->socket = $socket;
@@ -31,8 +30,7 @@ class PacketSendTask extends PluginTask{
 		parent::__construct($plugin);
 	}
 
-	public function onRun($currentTick)
-	{
+	public function onRun($currentTick) {
 		$queue = $this->plugin->getPacketQueue()->getQueue();
 
 		if(empty($queue))

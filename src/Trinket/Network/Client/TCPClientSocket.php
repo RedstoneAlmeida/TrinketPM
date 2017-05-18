@@ -21,8 +21,7 @@ class TCPClientSocket extends \Threaded{
 	private $connected = False;
 	private $attempts = 0;
 
-	public function __construct(TrinketLogger $logger, $password, $host, $name)
-	{
+	public function __construct(TrinketLogger $logger, $password, $host, $name) {
 		$this->logger = $logger;
 		$this->name = $name;
 
@@ -35,15 +34,13 @@ class TCPClientSocket extends \Threaded{
 		$option = @set_time_limit(0);
 		$option = @socket_set_nonblock($sock);
 		$this->logger->warning("Attempting to connect to host on " . $host . ":" . $port);
-		if(!$sock)
-		{
+		if(!$sock) {
 			$errorcode = socket_last_error();
 			$errormsg = str_replace([PHP_EOL, "\n"], "", socket_strerror($errorcode));
 			$this->logger->warning("Couldn't create socket: [" . $errorcode . "] " . $errormsg);
 			return;
 		}
-		if(!$connect)
-		{
+		if(!$connect) {
 			$errorcode = socket_last_error();
 			$errormsg = str_replace([PHP_EOL, "\n"], "", socket_strerror($errorcode));
 			$this->logger->warning("Couldn't connect to host: [" . $errorcode . "] " . $errormsg);
@@ -54,33 +51,27 @@ class TCPClientSocket extends \Threaded{
 		$this->connect($password);
 	}
 
-	public function direct(DataPacket $pk)
-	{
+	public function direct(DataPacket $pk) {
 		@socket_write($this->socket, $pk->encode());
 	}
 
-	public function read(int $buffer = 1024)
-	{
+	public function read(int $buffer = 1024) {
 		return new DecodedPacket(@socket_read($this->socket, $buffer));
 	}
 
-	public function isConnected()
-	{
+	public function isConnected() {
 		return $this->connected;
 	}
 
-	public function setConnected($bool = True)
-	{
+	public function setConnected($bool = True) {
 		$this->connected = $bool;
 	}
 
-	public function getSocket()
-	{
+	public function getSocket() {
 		return $this->socket;
 	}
 
-	public function connect($password)
-	{
+	public function connect($password) {
 		$this->attempts++;
 		$pk = new DataPacket();
 		$pk->id = Info::TYPE_PACKET_LOGIN;
@@ -89,22 +80,17 @@ class TCPClientSocket extends \Threaded{
 
 		$this->direct($pk);
 		$pk = $this->read();
-		if($pk->id === 0)
-		{
+		if($pk->id === 0) {
 			$this->attempts--;
 		}
-		if($pk->getId() === Info::TYPE_PACKET_LOGIN)
-		{
-			if($pk->data)
-			{
+		if($pk->getId() === Info::TYPE_PACKET_LOGIN) {
+			if($pk->data) {
 				$this->setConnected(True);
 				$this->logger->info("Connected to host server!");
 				return;
 			}
-			else
-			{
-				switch($pk->error)
-				{
+			else {
+				switch($pk->error) {
 					case Info::TYPE_ERROR_INVALID_PASSWORD:
 						$this->logger->error("Unable to connect to host server: Invalid Password.");
 						return;
@@ -117,16 +103,13 @@ class TCPClientSocket extends \Threaded{
 			}
 		}
 
-		if(!$this->isConnected() && $this->attempts < 10)
-		{
+		if(!$this->isConnected() && $this->attempts < 10) {
 			$this->connect($password);
 		}
 	}
 
-	public function shutdown($forced = false)
-	{
-		if($forced)
-		{
+	public function shutdown($forced = false) {
+		if($forced) {
 			$this->logger->warning("Socket force closing.");
 		}
 		$this->logger->warning("Lost connection to host server.");
