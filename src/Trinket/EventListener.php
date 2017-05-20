@@ -13,7 +13,7 @@ use Trinket\Network\Protocol\Info;
  * Written by Jake C <imagicalgamer@outlook.com>, May 2017
  */
 class EventListener implements Listener{
-
+    
     private $plugin, $data;
 
     public function __construct(Trinket $plugin, $data) {
@@ -33,25 +33,29 @@ class EventListener implements Listener{
     }
 
     public function onQueryRegenerate(QueryRegenerateEvent $event) {
-        $pk = new DataPacket();
-        $pk->id = Info::TYPE_PACKET_SERVER_INFORMATION;
-        $pk->data = json_encode([
-            "type" => 0,
-            "maxplayers" => $event->getMaxPlayerCount(),
-            "online" => $event->getPlayerCount(),
-            "motd" => Server::getInstance()->getNetwork()->getName(),
-            "serverId" => $this->data["name"],
-        ]);
-        $this->plugin->getPacketQueue()->push($pk);
+        if($this->data["queryUpdate"] === true or "true") {
+            $pk = new DataPacket();
+            $pk->id = Info::TYPE_PACKET_SERVER_INFORMATION;
+            $pk->data = json_encode([
+                "type" => 0,
+                "maxplayers" => $event->getMaxPlayerCount(),
+                "online" => $event->getPlayerCount(),
+                "motd" => Server::getInstance()->getNetwork()->getName(),
+                "serverId" => $this->data["name"],
+            ]);
+            $this->plugin->getPacketQueue()->push($pk);
+        }
     }
 
     public function onLogin(PlayerLoginEvent $event) {
-        $pk = new DataPacket();
-        $pk->id = Info::TYPE_PACKET_SERVER_INFORMATION;
-        $pk->data = json_encode([
-            "type" => 1,
-            "message" => "{$event->getPlayer()->getName()} connected to server {$this->data["name"]}",
-        ]);
-        $this->plugin->getPacketQueue()->push($pk);
+        if($this->data["playerJoined"] === true or "true") {
+            $pk = new DataPacket();
+            $pk->id = Info::TYPE_PACKET_SERVER_INFORMATION;
+            $pk->data = json_encode([
+                "type" => 1,
+                "message" => "{$event->getPlayer()->getName()} connected to server {$this->data["name"]}",
+            ]);
+            $this->plugin->getPacketQueue()->push($pk);
+        }
     }
 }
