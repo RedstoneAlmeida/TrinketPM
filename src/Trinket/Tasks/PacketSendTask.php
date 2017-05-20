@@ -44,8 +44,6 @@ class PacketSendTask extends PluginTask{
 			$this->logger->debug("Instance of non-packet detected in send queue");
 			return;
 		}
-
-		$this->logger->debug("Sent packet with id " . $pk->getId());
 		$this->socket->direct($pk);
 	}
 }

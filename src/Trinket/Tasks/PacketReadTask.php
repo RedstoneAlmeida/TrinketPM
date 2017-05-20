@@ -9,6 +9,7 @@ use Trinket\Network\Protocol\Info;
 use Trinket\Network\Client\TCPClientSocket;
 
 use Trinket\Utils\ThreadedQueue;
+use Trinket\Utils\ThreadedStorage;
 
 use Trinket\Utils\TrinketLogger;
 
@@ -19,59 +20,64 @@ use Trinket\Utils\TrinketLogger;
  */
 class PacketReadTask extends Thread{
 
-	private $socket, $logger, $nullpacket, $threadedqueue;
+    private $socket, $logger, $nullpacket, $threadedqueue, $threadedstorage;
 
-	public function __construct(TrinketLogger $logger, TCPClientSocket $socket, ThreadedQueue $threadedqueue) {
-		$this->logger = $logger;
-		$this->socket = $socket;
-		$this->threadedqueue = $threadedqueue;
+    public function __construct(TrinketLogger $logger, TCPClientSocket $socket, ThreadedQueue $threadedqueue, ThreadedStorage $threadedstorage, ThreadedQueue $messagequeue) {
+        $this->logger = $logger;
+        $this->socket = $socket;
+        $this->threadedqueue = $threadedqueue;
+        $this->threadedstorage = $threadedstorage;
+        $this->messagequeue = $messagequeue;
 
-		$this->start();
-	}
+        $this->start();
+    }
 
-	public function run() {
-		while($this->socket->isConnected()) {
-			$pk = $this->socket->read();
-			if(intval($pk->protocol) !== Info::PROTOCOL) {
-				if(intval($pk->protocol) === 0) {
-					continue;
-				}
-				$arg = ($pk->protocol > Info::PROTOCOL) ? "outdated" : "unknown";
-				$this->logger->error("Recieved packet with " . $arg . " protocol.");
-				continue;
-			}
-			switch($pk->getId()) {
-				case Info::TYPE_PACKET_PONG:
-					$this->logger->info("PONG.");
-				case Info::TYPE_PACKET_LOGIN:
-					continue;
-				break;
-				case Info::TYPE_PACKET_DISCONNECT:
-					$this->socket->shutdown();
-				break;
-				case Info::TYPE_PACKET_DUMMY:
-					$pk = new DataPacket();
-					$pk->id = Info::TYPE_PACKET_DUMMY;
-					$this->socket->direct($pk);
+    public function run() {
+        while($this->socket->isConnected()) {
+            $pk = $this->socket->read();
+            if(intval($pk->protocol) !== Info::PROTOCOL) {
+                if(intval($pk->protocol) === 0) {
+                    continue;
+                }
+                $arg = ($pk->protocol > Info::PROTOCOL) ? "outdated" : "unknown";
+                $this->logger->error("Recieved packet with " . $arg . " protocol.");
+                continue;
+            }
+            switch($pk->getId()) {
+                case Info::TYPE_PACKET_LOGIN:
+                    continue;
+                    break;
+                case Info::TYPE_PACKET_DISCONNECT:
+                    $this->socket->shutdown();
+                    break;
+                case Info::TYPE_PACKET_DUMMY:
+                    $this->threadedstorage->setData($pk->data);
 
-					unset($pk);
-					$pk = new DataPacket();
-					$pk->id = Info::TYPE_PACKET_INFO_SEND;
-					$pk->data = [];//todo: add a function on main thread that sends latest data to ReadPacketTask
-					$this->socket->direct($pk);
-				break;
-				case Info::TYPE_PACKET_COMMAND_EXECUTE:
-					$cmd = $pk->data;
-					$this->getCommandQueue()->push(rtrim($cmd));
-				break;
-				case Info::TYPE_PACKET_INFO:
-					$info = $pk->data;
-				break;
-			}
-		}
-	}
+                    $pk = new DataPacket();
+                    $pk->id = Info::TYPE_PACKET_DUMMY;
+                    $this->socket->direct($pk);
+                    break;
+                case Info::TYPE_PACKET_COMMAND_EXECUTE:
+                    $cmd = $pk->data;
+                    $this->getCommandQueue()->push(rtrim($cmd));
+                    break;
+                case Info::TYPE_PACKET_CHAT:
+                    $msg = $pk->data;
+                    $this->getChatQueue()->push($msg);
+                    break;
+            }
+        }
+    }
 
-	public function getCommandQueue() {
-		return $this->threadedqueue;
-	}
+    public function getCommandQueue() {
+        return $this->threadedqueue;
+    }
+
+    public function getChatQueue() {
+        return $this->messagequeue;
+    }
+
+    public function getThreadedStorage() {
+        return $this->threadedstorage;
+    }
 }
