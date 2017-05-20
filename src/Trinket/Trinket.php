@@ -65,7 +65,7 @@ class Trinket extends PluginBase{
         $this->getServer()->getScheduler()->scheduleRepeatingTask(new CommandExecuteTask($this), 20);
         $this->getServer()->getScheduler()->scheduleRepeatingTask(new ChatSendTask($this), 10);
         $this->readtask = new PacketReadTask($this->tlogger, $this->socket, $this->threadedqueue, $this->threadedstorage, $this->messagequeue);
-
+        ## event
         $this->getServer()->getPluginManager()->registerEvents(new EventListener($this, $data), $this);
     }
 
