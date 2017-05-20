@@ -29,6 +29,8 @@ class Info{
     const TYPE_PACKET_INFO = 26;
     const TYPE_PACKET_INFO_SEND = 73;
 
+    const TYPE_PACKET_SERVER_INFORMATION = 40;
+
     const TYPE_DISCONNECT_FORCED = 11000001;
 
     const TYPE_ERROR_INVALID_PASSWORD = 10101010;
@@ -45,5 +47,5 @@ class Info{
     const TYPE_DATA_EMPTY = 11100111;
 
 
-    const PROTOCOL = 157;
+    const PROTOCOL = 160;
 }
