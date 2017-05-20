@@ -33,7 +33,7 @@ class EventListener implements Listener{
     }
 
     public function onQueryRegenerate(QueryRegenerateEvent $event) {
-        if($this->data["queryUpdate"] === true or "true") {
+        if(boolval($this->data["queryUpdate"]) === true){
             $pk = new DataPacket();
             $pk->id = Info::TYPE_PACKET_SERVER_INFORMATION;
             $pk->data = json_encode([
@@ -48,7 +48,7 @@ class EventListener implements Listener{
     }
 
     public function onLogin(PlayerLoginEvent $event) {
-        if($this->data["playerJoined"] === true or "true") {
+        if(boolval($this->data["playerJoined"]) === true){
             $pk = new DataPacket();
             $pk->id = Info::TYPE_PACKET_SERVER_INFORMATION;
             $pk->data = json_encode([
