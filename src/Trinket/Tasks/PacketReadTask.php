@@ -9,6 +9,7 @@ use Trinket\Network\Protocol\Info;
 use Trinket\Network\Client\TCPClientSocket;
 
 use Trinket\Utils\ThreadedQueue;
+use Trinket\Utils\ThreadedStorage;
 
 use Trinket\Utils\TrinketLogger;
 
@@ -21,10 +22,12 @@ class PacketReadTask extends Thread{
 
 	private $socket, $logger, $nullpacket, $threadedqueue;
 
-	public function __construct(TrinketLogger $logger, TCPClientSocket $socket, ThreadedQueue $threadedqueue) {
+	public function __construct(TrinketLogger $logger, TCPClientSocket $socket, ThreadedQueue $threadedqueue, ThreadedStorage $threadedstorage, ThreadedQueue $messagequeue) {
 		$this->logger = $logger;
 		$this->socket = $socket;
 		$this->threadedqueue = $threadedqueue;
+		$this->threadedstorage = $threadedstorage;
+		$this->messagequeue = $messagequeue;
 
 		$this->start();
 	}
@@ -41,8 +44,6 @@ class PacketReadTask extends Thread{
 				continue;
 			}
 			switch($pk->getId()) {
-				case Info::TYPE_PACKET_PONG:
-					$this->logger->info("PONG.");
 				case Info::TYPE_PACKET_LOGIN:
 					continue;
 				break;
@@ -50,22 +51,15 @@ class PacketReadTask extends Thread{
 					$this->socket->shutdown();
 				break;
 				case Info::TYPE_PACKET_DUMMY:
+					$this->threadedstorage->setData($pk->data);
+
 					$pk = new DataPacket();
 					$pk->id = Info::TYPE_PACKET_DUMMY;
-					$this->socket->direct($pk);
-
-					unset($pk);
-					$pk = new DataPacket();
-					$pk->id = Info::TYPE_PACKET_INFO_SEND;
-					$pk->data = [];//todo: add a function on main thread that sends latest data to ReadPacketTask
 					$this->socket->direct($pk);
 				break;
 				case Info::TYPE_PACKET_COMMAND_EXECUTE:
 					$cmd = $pk->data;
 					$this->getCommandQueue()->push(rtrim($cmd));
-				break;
-				case Info::TYPE_PACKET_INFO:
-					$info = $pk->data;
 				break;
 			}
 		}
@@ -73,5 +67,13 @@ class PacketReadTask extends Thread{
 
 	public function getCommandQueue() {
 		return $this->threadedqueue;
+	}
+
+	public function getChatQueue() {
+		return $this->messagequeue;
+	}
+
+	public function getThreadedStorage() {
+		return $this->threadedstorage;
 	}
 }
