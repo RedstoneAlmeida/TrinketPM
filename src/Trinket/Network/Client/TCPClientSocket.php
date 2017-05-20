@@ -25,7 +25,7 @@ class TCPClientSocket extends \Threaded{
 		$this->logger = $logger;
 		$this->name = $name;
 
-		$host = ($host !== "") ? $host : getHostByName(getHostName());
+		$host = ($host !== "") ? $host : gethostbyname(gethostname());
 		$port = 33657;
 
 		$sock = @socket_create(AF_INET, SOCK_STREAM, SOL_TCP);

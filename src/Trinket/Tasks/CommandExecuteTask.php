@@ -22,7 +22,9 @@ use Trinket\Trinket;
  */
 class CommandExecuteTask extends PluginTask{
 
-	private $socket, $logger, $plugin;
+	private $socket, $logger;
+
+    private $plugin;
 
 	public function __construct(Trinket $plugin, TrinketLogger $logger) {
 		$this->plugin = $plugin;
@@ -36,6 +38,7 @@ class CommandExecuteTask extends PluginTask{
 		if(empty($queue)) {
 			return;
 		}
+
 
 		$cmd = $this->plugin->getCommandQueue()->getNext();
 		if(is_null($cmd) or !is_string($cmd)) {
