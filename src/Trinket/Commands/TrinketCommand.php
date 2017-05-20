@@ -26,6 +26,6 @@ class TrinketCommand extends BaseCommand{
 
     public function execute(CommandSender $sender, $commandLabel, array $args) {
         $data = $this->plugin->getThreadedStorage()->getAll();
-        $sender->sendMessage("Latest Trinket Info\nVersion " . $this->plugin->getDescription()->getVerison() . "\nProtocol " . Info::PROTOCOL . "\nNetwork Players " . $data["players"]);
+        $sender->sendMessage("Latest Trinket Info\nVersion " . $this->plugin->getDescription()->getVersion() . "\nProtocol " . Info::PROTOCOL . "\nNetwork Players " . $data["players"]);
     }
 }

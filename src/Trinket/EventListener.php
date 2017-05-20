@@ -13,7 +13,7 @@ use Trinket\Network\Protocol\Info;
  * Written by Jake C <imagicalgamer@outlook.com>, May 2017
  */
 class EventListener implements Listener{
-    
+
     private $plugin, $data;
 
     public function __construct(Trinket $plugin, $data) {
