@@ -46,7 +46,7 @@ class EventListener implements Listener{
             "maxplayers" => $event->getMaxPlayerCount(),
             "online" => $event->getPlayerCount(),
             "motd" => Server::getInstance()->getNetwork()->getName(),
-            "servername" => $event->getServerName(),
+            "serverId" => $this->data["name"],
         ]);
         $this->plugin->getPacketQueue()->push($pk);
     }
