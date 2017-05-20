@@ -1,6 +1,7 @@
 <?php
 namespace Trinket\Commands;
 
+use pocketmine\Server;
 use Trinket\Trinket;
 use Trinket\Network\Protocol\DataPacket;
 use Trinket\Network\Protocol\Info;
@@ -38,15 +39,22 @@ class TrinketCommand extends BaseCommand{
                 $pk = new DataPacket();
                 $pk->id = Info::TYPE_PACKET_PING;
                 $this->plugin->getPacketQueue()->push($pk);
-            break;
+                break;
             case "info":
                 $sender->sendMessage("Trinket v" . $this->plugin->getDescription()->getVersion() . " Protocol: " . Info::PROTOCOL);
                 $conn = ($this->plugin->getTCPSocket()->isConnected() === True) ? "True" : "False";
                 $sender->sendMessage("Connected: " . $conn);
-            break;
+                break;
+            case "players":
+                $sender->sendMessage("Sending player count to Host");
+                $pk = new DataPacket();
+                $pk->id = Info::TYPE_PACKET_SERVER_INFORMATION;
+                $pk->data = "Players in Server: " . count(Server::getInstance()->getOnlinePlayers());
+                $this->plugin->getPacketQueue()->push($pk);
+                break;
             default:
-                $sender->sendMessage("Usage: /trinket <test:info>");
-            break;
+                $sender->sendMessage("Usage: /trinket <test:info:players>");
+                break;
         }
     }
 }
