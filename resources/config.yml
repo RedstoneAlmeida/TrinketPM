@@ -5,4 +5,7 @@ host: 0.0.0.0
 password: ''
 # Name your server, ONLY one server with this name is allowed!
 name: server1
+# Informations sending to Trinket Host
+queryUpdate: false
+playerJoined: false
 ...
