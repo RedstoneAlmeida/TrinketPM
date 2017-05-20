@@ -47,5 +47,5 @@ class Info{
     const TYPE_DATA_EMPTY = 11100111;
 
 
-    const PROTOCOL = 160;
+    const PROTOCOL = 157;
 }

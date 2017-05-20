@@ -19,9 +19,11 @@ use Trinket\Network\Protocol\Info;
 class EventListener implements Listener{
 
     private $plugin;
+    private $data;
 
-    public function __construct(Trinket $plugin) {
+    public function __construct(Trinket $plugin, $data) {
         $this->plugin = $plugin;
+        $this->data = $data;
     }
 
     public function onChat(PlayerChatEvent $ev) {
@@ -54,7 +56,7 @@ class EventListener implements Listener{
         $pk->id = Info::TYPE_PACKET_SERVER_INFORMATION;
         $pk->data = json_encode([
             "type" => 1,
-            "message" => "{$event->getPlayer()->getName()} connected in Client",
+            "message" => "{$event->getPlayer()->getName()} connected in {$this->data["name"]}",
         ]);
         $this->plugin->getPacketQueue()->push($pk);
     }
