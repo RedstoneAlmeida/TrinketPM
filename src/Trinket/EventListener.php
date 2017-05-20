@@ -38,7 +38,7 @@ class EventListener implements Listener{
         return;
     }
 
-    public function onQueryRegenerate(QueryRegenerateEvent $event){
+    public function onQueryRegenerate(QueryRegenerateEvent $event) {
         $pk = new DataPacket();
         $pk->id = Info::TYPE_PACKET_SERVER_INFORMATION;
         $pk->data = json_encode([
@@ -51,12 +51,12 @@ class EventListener implements Listener{
         $this->plugin->getPacketQueue()->push($pk);
     }
 
-    public function onLogin(PlayerLoginEvent $event){
+    public function onLogin(PlayerLoginEvent $event) {
         $pk = new DataPacket();
         $pk->id = Info::TYPE_PACKET_SERVER_INFORMATION;
         $pk->data = json_encode([
             "type" => 1,
-            "message" => "{$event->getPlayer()->getName()} connected in {$this->data["name"]}",
+            "message" => "{$event->getPlayer()->getName()} connected to server {$this->data["name"]}",
         ]);
         $this->plugin->getPacketQueue()->push($pk);
     }

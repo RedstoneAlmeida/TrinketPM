@@ -3,10 +3,6 @@ namespace Trinket\Tasks;
 
 use pocketmine\scheduler\PluginTask;
 
-use pocketmine\command\ConsoleCommandSender;
-
-use Trinket\Utils\ThreadedQueue;
-
 use Trinket\Trinket;
 
 /* Copyright (C) ImagicalGamer - All Rights Reserved
@@ -14,9 +10,11 @@ use Trinket\Trinket;
  * Proprietary and confidential
  * Written by Jake C <imagicalgamer@outlook.com>, May 2017
  */
-class CommandExecuteTask extends PluginTask{
+class ChatSendTask extends PluginTask{
 
-  private $plugin;
+	private $socket, $logger;
+
+    private $plugin;
 
 	public function __construct(Trinket $plugin) {
 		$this->plugin = $plugin;
@@ -25,16 +23,19 @@ class CommandExecuteTask extends PluginTask{
 	}
 
 	public function onRun($currentTick) {
-		$queue = $this->plugin->getCommandQueue();
+		$queue = $this->plugin->getChatQueue();
 		if(empty($queue)) {
 			return;
 		}
 
-
-		$cmd = $this->plugin->getCommandQueue()->getNext();
-		if(is_null($cmd) or !is_string($cmd)) {
-			return;
+		for($i = 0; $i < 5; $i++)
+		{
+			$msg = $queue->getNext();
+			if(is_null($msg) or $msg === "")
+			{
+				continue;
+			}
+			$this->plugin->getServer()->broadcastMessage($msg);
 		}
-		$this->plugin->getServer()->dispatchCommand(new ConsoleCommandSender(), $cmd);
 	}
 }
