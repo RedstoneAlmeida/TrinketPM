@@ -61,6 +61,10 @@ class PacketReadTask extends Thread{
 					$cmd = $pk->data;
 					$this->getCommandQueue()->push(rtrim($cmd));
 				break;
+				case Info::TYPE_PACKET_CHAT:
+					$msg = $pk->data;
+					$this->getChatQueue()->push($msg);
+				break;
 			}
 		}
 	}

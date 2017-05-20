@@ -16,7 +16,9 @@ use Trinket\Trinket;
  */
 class CommandExecuteTask extends PluginTask{
 
-  private $plugin;
+	private $socket, $logger;
+
+    private $plugin;
 
 	public function __construct(Trinket $plugin) {
 		$this->plugin = $plugin;

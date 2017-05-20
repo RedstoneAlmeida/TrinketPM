@@ -93,9 +93,9 @@ class Trinket extends PluginBase{
     }
 
     public function getChatQueue() {
-        return $this->plugin->getChatQueue();
+        return $this->readtask->getChatQueue();
     }
-  
+
     public function getTCPSocket() : TCPClientSocket {
         return $this->socket;
     }
